@@ -14,17 +14,12 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health
 
 webhook:
-  signature:
-    secret: ${WEBHOOK_SECRET:change-me}
+  carland:
+    base-url: ${CARLAND_BASE_URL:http://carland-service:9091}
   rabbit:
     exchange: webhook.events
     queue: webhook.to-carland
     routing-key: partner.event
-  carland:
-    base-url: ${CARLAND_BASE_URL:http://carland-service:9091}
-    internal-token: ${CARLAND_INTERNAL_TOKEN:change-me}
-    health-path: /actuator/health
-    vin-exists-path: /internal/partner/cars/exists

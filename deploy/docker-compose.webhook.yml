@@ -1,0 +1,39 @@
+# Sunucudaki ana docker-compose.yml icine eklenecek parcalar.
+# env dosyasi: /root/carland.env (deploy/carland.env.example ornegi)
+
+services:
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: rabbitmq
+    restart: always
+    env_file:
+      - /root/carland.env
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      - carland-network
+    ports:
+      - "15672:15672"
+
+  webhook-service:
+    image: azizjava91/webhook-service:latest
+    container_name: webhook-service
+    restart: always
+    env_file:
+      - /root/carland.env
+    depends_on:
+      - rabbitmq
+    networks:
+      - carland-network
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  rabbitmq-data:
+
+# networks:
+#   carland-network:   <- ana docker-compose.yml'deki mevcut network'u kullan
