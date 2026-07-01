@@ -51,11 +51,13 @@ public class CarlandClientService {
     }
 
     public ResponseEntity<String> forwardNewServiceVisit(byte[] rawBody) {
+        String uri = carlandProperties.getBaseUrl() + PARTNER_BASE + "/new-service-visit";
         return restClient.post()
-                .uri(carlandProperties.getBaseUrl() + PARTNER_BASE + "/new-service-visit")
+                .uri(uri)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(rawBody)
-                .retrieve()
-                .toEntity(String.class);
+                .exchange((request, response) -> ResponseEntity
+                        .status(response.getStatusCode())
+                        .body(response.bodyTo(String.class)));
     }
 }
