@@ -31,11 +31,11 @@ public class WebhookController {
 
     @PostMapping(value = "/new-service-visit", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> newServiceVisit(@RequestBody byte[] rawBody) {
-        return carlandClientService.forwardPost("/new-service-visit", rawBody);
+        return carlandClientService.forwardPostWithQueueFallback("/new-service-visit", rawBody);
     }
 
     @PutMapping(value = "/edit/service-visit", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> updateServiceVisit(@RequestBody byte[] rawBody) {
-        return carlandClientService.forwardPut("/edit/service-visit", rawBody);
+        return carlandClientService.forwardPutWithQueueFallback("/edit/service-visit", rawBody);
     }
 }
