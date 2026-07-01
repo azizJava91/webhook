@@ -30,10 +30,14 @@ public class CarlandClientService {
     private final VisitQueuePublisher visitQueuePublisher;
 
     public String fetchTestResponse() {
-        return restClient.get()
-                .uri(carlandProperties.getBaseUrl() + PARTNER_BASE + "/test")
-                .retrieve()
-                .body(String.class);
+        try {
+            return restClient.get()
+                    .uri(carlandProperties.getBaseUrl() + PARTNER_BASE + "/test")
+                    .retrieve()
+                    .body(String.class);
+        } catch (ResourceAccessException ex) {
+            throw new CarlandUnavailableException("Carland service unreachable", ex);
+        }
     }
 
     public ResponseEntity<Void> findCarByVin(String vin) {
@@ -54,6 +58,8 @@ public class CarlandClientService {
                     .toBodilessEntity();
         } catch (HttpClientErrorException.NotFound e) {
             return ResponseEntity.notFound().build();
+        } catch (ResourceAccessException ex) {
+            throw new CarlandUnavailableException("Carland service unreachable", ex);
         }
     }
 

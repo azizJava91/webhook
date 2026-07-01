@@ -24,10 +24,10 @@ public class CarlandAvailabilityService {
                     .toBodilessEntity();
             return true;
         } catch (ResourceAccessException ex) {
-            log.debug("Carland unreachable: {}", ex.getMessage());
+            log.info("Carland unreachable: {}", ex.getMessage());
             return false;
         } catch (Exception ex) {
-            log.debug("Carland health check failed: {}", ex.getMessage());
+            log.info("Carland health check failed: {}", ex.getMessage());
             return false;
         }
     }

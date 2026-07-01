@@ -18,7 +18,7 @@ import java.io.IOException;
 public class WebhookSignatureFilter extends OncePerRequestFilter {
 
     private static final String WEBHOOK_PREFIX = "/webhook/";
-    private static final String TEST_PATH = "/webhook/test";
+    private static final String TEST_PATH = "/webhook/partner/test";
 
     private final HmacSignatureValidator hmacSignatureValidator;
 
