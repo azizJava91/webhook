@@ -27,7 +27,9 @@ public class CarlandQueueListenerManager {
 
     @Scheduled(fixedDelayString = "${webhook.rabbit.poll-interval-ms:30000}")
     public void syncListenerState() {
+        log.info("Carlandin veziyyeti kontrol edilir");
         boolean available = carlandAvailabilityService.isAvailable();
+        log.info("Carland veziyyeti: {}", available ? "islemir" : "isleyir");
         MessageListenerContainer container = listenerRegistry.getListenerContainer(rabbitProperties.getListenerId());
 
         if (container == null) {
@@ -38,7 +40,7 @@ public class CarlandQueueListenerManager {
         if (available) {
             if (!container.isRunning()) {
                 container.start();
-                log.info("Carland is available, Rabbit queue consumer started");
+                log.info("Carland isleyir, Rabbit queue consumer basladi");
             }
             return;
         }
