@@ -20,6 +20,8 @@ webhook:
   carland:
     base-url: ${CARLAND_BASE_URL:http://carland-service:9091}
     internal-token: ${CARLAND_INTERNAL_TOKEN:}
+  signature:
+    secret: ${WEBHOOK_SECRET:}
   rabbit:
     exchange: webhook.events
     queue: webhook.to-carland

@@ -7,7 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
 @SpringBootApplication
-@EnableConfigurationProperties({RabbitProperties.class, CarlandProperties.class})
+@EnableConfigurationProperties({RabbitProperties.class, CarlandProperties.class, WebhookSignatureProperties.class})
 public class WebhookApplication {
 
 	public static void main(String[] args) {

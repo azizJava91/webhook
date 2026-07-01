@@ -1,10 +1,15 @@
 package com.carcat.webhook.service;
 
 import com.carcat.webhook.config.CarlandProperties;
+import com.carcat.webhook.util.HmacSignatureValidator;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import java.nio.charset.StandardCharsets;
 
 @Service
 @RequiredArgsConstructor
@@ -14,6 +19,7 @@ public class CarlandClientService {
 
     private final RestClient restClient;
     private final CarlandProperties carlandProperties;
+    private final HmacSignatureValidator hmacSignatureValidator;
 
     public String fetchTestResponse() {
         return restClient.get()
@@ -22,17 +28,24 @@ public class CarlandClientService {
                 .body(String.class);
     }
 
-    public boolean findCarByVin(String vin) {
-        String uri = UriComponentsBuilder
-                .fromHttpUrl(carlandProperties.getBaseUrl() + PARTNER_BASE + "/car/find")
-                .queryParam("vin", vin)
-                .toUriString();
+    public ResponseEntity<Void> findCarByVin(String vin) {
+        String queryString = UriComponentsBuilder.newInstance()
+                .queryParam("vin", vin.trim())
+                .build()
+                .encode()
+                .getQuery();
 
-        Boolean exists = restClient.get()
-                .uri(uri)
-                .retrieve()
-                .body(Boolean.class);
+        String uri = carlandProperties.getBaseUrl() + PARTNER_BASE + "/car/find?" + queryString;
+        String signature = hmacSignatureValidator.sign(queryString.getBytes(StandardCharsets.UTF_8));
 
-        return Boolean.TRUE.equals(exists);
+        try {
+            return restClient.get()
+                    .uri(uri)
+                    .header(HmacSignatureValidator.HEADER_NAME, signature)
+                    .retrieve()
+                    .toBodilessEntity();
+        } catch (HttpClientErrorException.NotFound e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }
