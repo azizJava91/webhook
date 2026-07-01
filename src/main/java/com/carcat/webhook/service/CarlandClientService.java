@@ -1,6 +1,7 @@
 package com.carcat.webhook.service;
 
 import com.carcat.webhook.config.CarlandProperties;
+import com.carcat.webhook.exception.CarlandUnavailableException;
 import com.carcat.webhook.util.HmacSignatureValidator;
 import com.carcat.webhook.util.WebhookHeaders;
 import lombok.RequiredArgsConstructor;
