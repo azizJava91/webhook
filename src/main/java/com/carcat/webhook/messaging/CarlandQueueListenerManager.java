@@ -11,12 +11,12 @@ import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.util.concurrent.CompletableFuture;
-
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class CarlandQueueListenerManager {
+
+    private final Object syncLock = new Object();
 
     private final CarlandAvailabilityService carlandAvailabilityService;
     private final RabbitListenerEndpointRegistry listenerRegistry;
@@ -24,33 +24,43 @@ public class CarlandQueueListenerManager {
 
     @EventListener(ApplicationReadyEvent.class)
     public void onApplicationReady() {
-        CompletableFuture.runAsync(this::syncListenerState);
+        syncListenerState();
     }
 
     @Scheduled(fixedDelayString = "${webhook.rabbit.poll-interval-ms:30000}")
     public void syncListenerState() {
-        log.info("Carlandin veziyyeti kontrol edilir");
-        boolean available = carlandAvailabilityService.isAvailable();
-        log.info("Carland veziyyeti: {}", available ? "isleyir" : "islemir");
-        MessageListenerContainer container = listenerRegistry.getListenerContainer(rabbitProperties.getListenerId());
+        synchronized (syncLock) {
+            log.info("Carlandin veziyyeti kontrol edilir");
+            boolean available = carlandAvailabilityService.isAvailable();
+            log.info("Carland veziyyeti: {}", available ? "isleyir" : "islemir");
+            MessageListenerContainer container = listenerRegistry.getListenerContainer(rabbitProperties.getListenerId());
 
-        if (container == null) {
-            log.warn("Rabbit listener container not found: {}", rabbitProperties.getListenerId());
-            return;
-        }
-
-        if (available) {
-            if (!container.isRunning()) {
-                container.start();
-                log.info("Carland isleyir, Rabbit queue consumer basladi");
+            if (container == null) {
+                log.warn("Rabbit listener container not found: {}", rabbitProperties.getListenerId());
+                return;
             }
-            return;
-        }
 
-        if (container.isRunning()) {
-            container.stop();
-            log.info("Carland is down, Rabbit queue consumer paused (next check in {} ms)",
-                    rabbitProperties.getPollIntervalMs());
+            if (available) {
+                if (!container.isRunning()) {
+                    try {
+                        container.start();
+                        log.info("Carland isleyir, Rabbit queue consumer basladi");
+                    } catch (IllegalStateException ex) {
+                        log.warn("Rabbit consumer already starting or started: {}", ex.getMessage());
+                    }
+                }
+                return;
+            }
+
+            if (container.isRunning()) {
+                try {
+                    container.stop();
+                    log.info("Carland islemir, Rabbit queue consumer dayandirildi (novbeti yoxlama {} ms)",
+                            rabbitProperties.getPollIntervalMs());
+                } catch (IllegalStateException ex) {
+                    log.warn("Rabbit consumer already stopping or stopped: {}", ex.getMessage());
+                }
+            }
         }
     }
 }
