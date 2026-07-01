@@ -52,9 +52,11 @@ public class CarlandClientService {
 
     public ResponseEntity<String> forwardNewServiceVisit(byte[] rawBody) {
         String uri = carlandProperties.getBaseUrl() + PARTNER_BASE + "/new-service-visit";
+        String signature = hmacSignatureValidator.sign(rawBody);
         return restClient.post()
                 .uri(uri)
                 .contentType(MediaType.APPLICATION_JSON)
+                .header(HmacSignatureValidator.HEADER_NAME, signature)
                 .body(rawBody)
                 .exchange((request, response) -> ResponseEntity
                         .status(response.getStatusCode())
