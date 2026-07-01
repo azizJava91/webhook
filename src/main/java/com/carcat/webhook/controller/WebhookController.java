@@ -30,6 +30,7 @@ public class WebhookController {
 
     @PostMapping(value = "/new-service-visit", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> newServiceVisit(@RequestBody byte[] rawBody) {
+        System.err.println("bura isledi");
         return carlandClientService.forwardNewServiceVisit(rawBody);
     }
 }
