@@ -12,6 +12,12 @@ spring:
     listener:
       simple:
         default-requeue-rejected: true
+        retry:
+          enabled: true
+          initial-interval: 10s
+          max-interval: 60s
+          multiplier: 2
+          max-attempts: 5
 
 management:
   endpoints:
@@ -29,3 +35,5 @@ webhook:
     exchange: webhook.events
     queue: webhook.to-carland
     routing-key: partner.event
+    listener-id: carlandVisitQueueConsumer
+    poll-interval-ms: ${WEBHOOK_RABBIT_POLL_INTERVAL_MS:30000}
