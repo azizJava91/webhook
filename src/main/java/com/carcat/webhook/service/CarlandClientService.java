@@ -3,6 +3,7 @@ package com.carcat.webhook.service;
 import com.carcat.webhook.config.CarlandProperties;
 import com.carcat.webhook.util.HmacSignatureValidator;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
@@ -47,5 +48,14 @@ public class CarlandClientService {
         } catch (HttpClientErrorException.NotFound e) {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    public ResponseEntity<String> forwardNewServiceVisit(byte[] rawBody) {
+        return restClient.post()
+                .uri(carlandProperties.getBaseUrl() + PARTNER_BASE + "/new-service-visit")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(rawBody)
+                .retrieve()
+                .toEntity(String.class);
     }
 }
