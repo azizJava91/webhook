@@ -3,6 +3,7 @@ package com.carcat.webhook.service;
 import com.carcat.webhook.config.CarlandProperties;
 import com.carcat.webhook.util.HmacSignatureValidator;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -50,14 +51,22 @@ public class CarlandClientService {
         }
     }
 
-    public ResponseEntity<String> forwardNewServiceVisit(byte[] rawBody) {
-        String uri = carlandProperties.getBaseUrl() + PARTNER_BASE + "/new-service-visit";
+    public ResponseEntity<String> forwardPost(String path, byte[] rawBody) {
+        return forward(HttpMethod.POST, path, rawBody);
+    }
+
+    public ResponseEntity<String> forwardPut(String path, byte[] rawBody) {
+        return forward(HttpMethod.PUT, path, rawBody);
+    }
+
+    private ResponseEntity<String> forward(HttpMethod method, String path, byte[] rawBody) {
+        String uri = carlandProperties.getBaseUrl() + PARTNER_BASE + path;
         String signature = hmacSignatureValidator.sign(rawBody);
-        return restClient.post()
+        RestClient.RequestBodySpec spec = restClient.method(method)
                 .uri(uri)
                 .contentType(MediaType.APPLICATION_JSON)
-                .header(HmacSignatureValidator.HEADER_NAME, signature)
-                .body(rawBody)
+                .header(HmacSignatureValidator.HEADER_NAME, signature);
+        return spec.body(rawBody)
                 .exchange((request, response) -> ResponseEntity
                         .status(response.getStatusCode())
                         .body(response.bodyTo(String.class)));
