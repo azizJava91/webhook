@@ -26,9 +26,9 @@ public class WebhookSignatureFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        String path = request.getRequestURI();
+        String path = normalizePath(request.getRequestURI());
 
-        if (!path.startsWith(WEBHOOK_PREFIX) || TEST_PATH.equals(path)) {
+        if (!path.startsWith(WEBHOOK_PREFIX) || isSignatureExempt(path)) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -44,5 +44,16 @@ public class WebhookSignatureFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(wrapped, response);
+    }
+
+    private static String normalizePath(String path) {
+        if (path == null || path.length() <= 1) {
+            return path;
+        }
+        return path.endsWith("/") ? path.substring(0, path.length() - 1) : path;
+    }
+
+    private static boolean isSignatureExempt(String path) {
+        return TEST_PATH.equals(path);
     }
 }
