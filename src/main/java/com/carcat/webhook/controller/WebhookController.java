@@ -29,9 +29,9 @@ public class WebhookController {
         return carlandClientService.findCarByVin(vin);
     }
 
-    @PostMapping(value = "/edit/service-visit", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/new-service-visit", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> newServiceVisit(@RequestBody byte[] rawBody) {
-        return carlandClientService.forwardPost("/edit/service-visit", rawBody);
+        return carlandClientService.forwardPost("/new-service-visit", rawBody);
     }
 
     @PutMapping(value = "/edit/service-visit", consumes = MediaType.APPLICATION_JSON_VALUE)
